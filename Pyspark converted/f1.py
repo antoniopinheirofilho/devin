@@ -4,7 +4,13 @@ from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName("SAS_Conversion_F1").getOrCreate()
 
 def hello_world():
-    # Equivalent to the SAS DS2 program that prints "Hello World!"
+    """
+    SAS vs PySpark Implementation Differences:
+    - SAS uses DS2 proc with data _null_ for standalone programs
+    - PySpark uses simple Python function with print statement
+    - SAS init() method is replaced with a standard Python function
+    - Output format matches SAS put statement behavior
+    """
     message = "Hello World!"
     print(message)
 

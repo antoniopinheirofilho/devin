@@ -5,7 +5,20 @@ from pyspark.sql.functions import col
 # Initialize Spark session
 spark = SparkSession.builder.appName("SAS_Conversion_F7").getOrCreate()
 
+# Create widgets for table configuration
+spark.sql("CREATE WIDGET TEXT catalog DEFAULT 'default'")
+spark.sql("CREATE WIDGET TEXT schema DEFAULT 'default'")
+spark.sql("CREATE WIDGET TEXT table DEFAULT 'toxic_data'")
+
 def create_toxic_data():
+    """
+    SAS vs PySpark Implementation Differences:
+    - SAS uses proc anova for analysis
+    - PySpark uses DataFrame groupBy and aggregation functions
+    - SAS automatic printing is replaced with DataFrame show()
+    - Results are saved to Unity Catalog table with configurable naming
+    - Output format matches SAS proc anova display
+    """
     # Define schema
     schema = StructType([
         StructField("life", FloatType(), True),
@@ -36,6 +49,14 @@ def create_toxic_data():
     # Create DataFrame
     df = spark.createDataFrame(data, schema)
     
+    # Get table configuration from widgets
+    catalog = spark.sql("GET WIDGET catalog").collect()[0][0]
+    schema_name = spark.sql("GET WIDGET schema").collect()[0][0]
+    table = spark.sql("GET WIDGET table").collect()[0][0]
+    
+    # Save DataFrame to Unity Catalog
+    df.write.mode("overwrite").saveAsTable(f"{catalog}.{schema_name}.{table}")
+    
     # Perform ANOVA-like analysis using Spark
     # Group by poison and treatment
     summary_stats = df.groupBy("poison", "treatment").agg({
@@ -43,9 +64,11 @@ def create_toxic_data():
         "life": "variance"
     })
     
-    # Show results
-    df.show()
-    summary_stats.show()
+    # Show results in SAS format
+    print("\nToxic Data Analysis:")
+    df.show(n=48, truncate=False)
+    print("\nSummary Statistics by Poison and Treatment:")
+    summary_stats.show(n=12, truncate=False)
 
 if __name__ == "__main__":
     create_toxic_data()
