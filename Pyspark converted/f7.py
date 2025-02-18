@@ -8,9 +8,9 @@ spark = SparkSession.builder.appName("SAS_Conversion_F7").getOrCreate()
 dbutils = DBUtils(spark)
 
 # Create widgets for table configuration
-dbutils.widgets.text("catalog", "default")
+dbutils.widgets.text("catalog", "main")
 dbutils.widgets.text("schema", "default")
-dbutils.widgets.text("table", "toxic_data")
+dbutils.widgets.text("table", "table_output")
 
 def create_toxic_data():
     """
