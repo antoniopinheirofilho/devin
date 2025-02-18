@@ -1,13 +1,15 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType
+from pyspark.dbutils import DBUtils
 
 # Initialize Spark session
 spark = SparkSession.builder.appName("SAS_Conversion_F4").getOrCreate()
+dbutils = DBUtils(spark)
 
 # Create widgets for table configuration
-spark.sql("CREATE WIDGET TEXT catalog DEFAULT 'default'")
-spark.sql("CREATE WIDGET TEXT schema DEFAULT 'default'")
-spark.sql("CREATE WIDGET TEXT table DEFAULT 'greetings'")
+dbutils.widgets.text("catalog", "default")
+dbutils.widgets.text("schema", "default")
+dbutils.widgets.text("table", "greetings")
 
 class Greeting:
     """
@@ -40,9 +42,9 @@ def create_greetings_table():
 
 def main():
     # Get table configuration from widgets
-    catalog = spark.sql("GET WIDGET catalog").collect()[0][0]
-    schema = spark.sql("GET WIDGET schema").collect()[0][0]
-    table = spark.sql("GET WIDGET table").collect()[0][0]
+    catalog = dbutils.widgets.get("catalog")
+    schema = dbutils.widgets.get("schema")
+    table = dbutils.widgets.get("table")
     
     # Create the greetings table
     greetings_df = create_greetings_table()

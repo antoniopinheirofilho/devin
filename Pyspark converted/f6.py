@@ -1,15 +1,17 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import expr
+from pyspark.dbutils import DBUtils
 from scipy import stats
 import matplotlib.pyplot as plt
 
 # Initialize Spark session
 spark = SparkSession.builder.appName("SAS_Conversion_F6").getOrCreate()
+dbutils = DBUtils(spark)
 
 # Create widgets for table configuration
-spark.sql("CREATE WIDGET TEXT catalog DEFAULT 'default'")
-spark.sql("CREATE WIDGET TEXT schema DEFAULT 'default'")
-spark.sql("CREATE WIDGET TEXT table DEFAULT 'chi_ratios'")
+dbutils.widgets.text("catalog", "default")
+dbutils.widgets.text("schema", "default")
+dbutils.widgets.text("table", "chi_ratios")
 
 def calculate_chi_ratios():
     """
@@ -35,9 +37,9 @@ def calculate_chi_ratios():
     result_df = spark.createDataFrame(chi_ratios, ["df", "chirat"])
     
     # Get table configuration from widgets
-    catalog = spark.sql("GET WIDGET catalog").collect()[0][0]
-    schema = spark.sql("GET WIDGET schema").collect()[0][0]
-    table = spark.sql("GET WIDGET table").collect()[0][0]
+    catalog = dbutils.widgets.get("catalog")
+    schema = dbutils.widgets.get("schema")
+    table = dbutils.widgets.get("table")
     
     # Save DataFrame to Unity Catalog
     result_df.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.{table}")

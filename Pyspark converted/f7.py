@@ -1,14 +1,16 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, FloatType, StringType
 from pyspark.sql.functions import col
+from pyspark.dbutils import DBUtils
 
 # Initialize Spark session
 spark = SparkSession.builder.appName("SAS_Conversion_F7").getOrCreate()
+dbutils = DBUtils(spark)
 
 # Create widgets for table configuration
-spark.sql("CREATE WIDGET TEXT catalog DEFAULT 'default'")
-spark.sql("CREATE WIDGET TEXT schema DEFAULT 'default'")
-spark.sql("CREATE WIDGET TEXT table DEFAULT 'toxic_data'")
+dbutils.widgets.text("catalog", "default")
+dbutils.widgets.text("schema", "default")
+dbutils.widgets.text("table", "toxic_data")
 
 def create_toxic_data():
     """
@@ -50,9 +52,9 @@ def create_toxic_data():
     df = spark.createDataFrame(data, schema)
     
     # Get table configuration from widgets
-    catalog = spark.sql("GET WIDGET catalog").collect()[0][0]
-    schema_name = spark.sql("GET WIDGET schema").collect()[0][0]
-    table = spark.sql("GET WIDGET table").collect()[0][0]
+    catalog = dbutils.widgets.get("catalog")
+    schema_name = dbutils.widgets.get("schema")
+    table = dbutils.widgets.get("table")
     
     # Save DataFrame to Unity Catalog
     df.write.mode("overwrite").saveAsTable(f"{catalog}.{schema_name}.{table}")
